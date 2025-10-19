@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -13,9 +14,10 @@ class PostController extends Controller
     public function index()
     {
         
-        $posts = Post::with('images')->get();
+        // $posts = Post::find(2)->oldest_comment;
+        // return $posts;
+        $posts = Post::with('comments')->with('tags')->get();
         return $posts;
-
     }
 
     /**
@@ -23,15 +25,30 @@ class PostController extends Controller
      */
     public function create()
     {
-       $post = Post::create([
-            'title' => 'First Post',
-            'description' => 'This is the content of the first post.',
-            'user_id' => 1
-        ]);
+    //    $post = Post::create([
+    //         'title' => 'First Post',
+    //         'description' => 'This is the content of the first post.',
+    //         'user_id' => 1
+    //     ]);
 
-        $post->images()->create([
-            'url' => 'images/post1.jpg'
-        ]);
+    //     $post->images()->create([
+    //         'url' => 'images/post1.jpg'
+    //     ]);
+
+    // $post = Post::find(1)->comments()->create([
+    //     'comment'=>'This is a  comment on my first the post.'
+    // ]);
+
+
+
+    $post = Post::find(1);
+
+    $post->tags()->create([
+        'taggable_id' => $post->id,
+        'taggable_type' => Post::class,
+        'tag_id' => 3,
+    ]);
+
     }
 
     /**
@@ -39,7 +56,7 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
