@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Tag;
+use App\Models\Taggable;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -13,11 +14,32 @@ class PostController extends Controller
      */
     public function index()
     {
-        
+
+        // there use local scope which is not directly run
+        $posts = Post::withUserRole()
+            ->with('comments')
+            ->get();
+
+        $formatted = $posts->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'title' => ucwords($post->title),
+                'author' => $post->users->name ?? "Unknown",
+                'comments' => $post->comments->map(function ($comment) {
+                    return strtoupper($comment->body);
+                }),
+            ];
+        });
+
+        return $formatted;
+
+
+
         // $posts = Post::find(2)->oldest_comment;
         // return $posts;
-        $posts = Post::with('comments')->with('tags')->get();
-        return $posts;
+        // $posts = Post::with('comments')->with('tags')->get();
+        // return $posts;
+
     }
 
     /**
@@ -25,29 +47,29 @@ class PostController extends Controller
      */
     public function create()
     {
-    //    $post = Post::create([
-    //         'title' => 'First Post',
-    //         'description' => 'This is the content of the first post.',
-    //         'user_id' => 1
-    //     ]);
+        $post = Post::create([
+            'title' => 'Fourth Post',
+            'description' => 'This is the content of the Fourth post.',
+            'user_id' => 1
+        ]);
 
-    //     $post->images()->create([
-    //         'url' => 'images/post1.jpg'
-    //     ]);
+        $post->images()->create([
+            'url' => 'images/post4.jpg'
+        ]);
 
-    // $post = Post::find(1)->comments()->create([
-    //     'comment'=>'This is a  comment on my first the post.'
-    // ]);
+        $post->comments()->create([
+            'comment' => 'This is a  comment on my Fourth the post.'
+        ]);
 
 
 
-    $post = Post::find(1);
+        // $post = Post::find(1);
 
-    $post->tags()->create([
-        'taggable_id' => $post->id,
-        'taggable_type' => Post::class,
-        'tag_id' => 3,
-    ]);
+        // Taggable::create([
+        //     'taggable_id' => 3,
+        //     'taggable_type' => Post::class,
+        //     'tag_id' => 2,
+        // ]);
 
     }
 
@@ -56,7 +78,7 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        
+
     }
 
     /**
@@ -88,6 +110,15 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $post = Post::find($id);
+
+        if ($post) {
+            $post->delete();
+            return redirect()->route('posts.index')->with('success', 'Post deleted successfully.');
+        }
+
+        return redirect()->route('posts.index')->with('error', 'Post not found.');
+
     }
+
 }

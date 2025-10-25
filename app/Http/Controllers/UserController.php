@@ -12,8 +12,13 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users =User::with('images')->get();
-        return $users;
+       $users = User::with(['latestpost' => function ($query) {
+        $query->select('posts.id', 'posts.title', 'posts.description', 'posts.user_id');
+    }])
+    ->get(['id', 'name', 'email']);
+
+return $users;
+
     }
 
     /**
@@ -21,9 +26,14 @@ class UserController extends Controller
      */
     public function create()
     {
-        User::find(1)->images()->create([
-            'url' => 'images/user1.jpg'
-        ]);
+      $user = User::create([
+        'name'=>'nimra khan',
+        'email'=>'NimRa@gmail.com',
+        'role'=>'user'
+       ]);
+
+       $user->images()->create(['url'=>'images/image2.jpg']);
+
     }
 
     /**
